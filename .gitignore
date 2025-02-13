@@ -1,0 +1,18 @@
+# Python
+*.pyc
+__pycache__/
+*.env
+VenvLx/
+
+# Logs
+*.log
+DLog*.zip
+DLog.*zip
+DLog.*.log.zip
+
+# Docker
+*.dockerignore
+
+# Zone.Identifier files (Windows WSL bug)
+*:Zone.Identifier
+**/*Zone.Identifier
