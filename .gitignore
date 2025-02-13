@@ -16,3 +16,9 @@ DLog.*.log.zip
 # Zone.Identifier files (Windows WSL bug)
 *:Zone.Identifier
 **/*Zone.Identifier
+
+/build/
+/logs/
+/ddclient
+
+_OLD/
