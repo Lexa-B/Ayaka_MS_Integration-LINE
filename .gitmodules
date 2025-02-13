@@ -1,0 +1,3 @@
+[submodule "vendor/ddclient"]
+	path = vendor/ddclient
+	url = https://github.com/ddclient/ddclient.git
