@@ -1,14 +1,19 @@
-# Python
-*.pyc
-__pycache__/
+# Environment
+.env
 *.env
+*.env.*
 VenvLx/
+
+# Python
+__pycache__/
+*.pyc
 
 # Logs
 *.log
 DLog*.zip
 DLog.*zip
 DLog.*.log.zip
+logs/
 
 # Docker
 *.dockerignore
@@ -17,8 +22,11 @@ DLog.*.log.zip
 *:Zone.Identifier
 **/*Zone.Identifier
 
-/build/
-/logs/
-/ddclient
-
+# Build
+build/
 _OLD/
+cloudflared.deb
+
+# Cloudflare
+.cloudflared/
+cloudflared.deb
