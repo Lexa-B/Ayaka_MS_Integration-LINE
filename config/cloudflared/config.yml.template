@@ -1,0 +1,37 @@
+tunnel: ${CLOUDFLARE_TUNNEL_ID}
+credentials-file: ./build/cloudflared/${CLOUDFLARE_TUNNEL_ID}.json
+
+# Security settings
+originRequest:
+  # Only allow traffic to port 50005
+  connectTimeout: 30s
+  disableChunkedEncoding: true
+  noTLSVerify: true
+  ipRules:
+    - prefix: 0.0.0.0/0  # Allow all IPs for now
+      ports: [50005]
+      allow: true
+
+# Basic config
+ingress:
+  # Only accept POST requests to /providers/line
+  - hostname: line.provider.ayaka.lexa.digital
+    path: /providers/line
+    service: http://localhost:50005
+    originRequest:
+      connectTimeout: 10s
+      tcpKeepAlive: 30s
+      noTLSVerify: true
+      proxyType: http
+
+  # Return 405 Method Not Allowed for non-POST requests
+  - hostname: line.provider.ayaka.lexa.digital
+    path: /providers/line
+    service: http_status:405
+
+  # Return 404 for everything else
+  - service: http_status:404
+
+# Debug settings
+logLevel: debug
+transport-loglevel: debug 

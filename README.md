@@ -27,6 +27,39 @@
    - Run `./_START_APPLICATION.sh` to start the LLM microservice and any background tasks.  
    - Run `./_START_TUNNEL.sh` to open a Cloudflared tunnel to `line.provider.ayaka.lexa.digital`.
 
+## Setup & Installation
+
+### 1. Environment Setup
+Create a `.env` file with the following variables:
+```ini
+CLOUDFLARE_API_TOKEN_DNS01=your_cloudflare_api_token  # Token with DNS edit permissions
+CERTBOT_EMAIL=your_email@example.com                  # Email for Let's Encrypt notifications
+```
+
+### 2. Initial Setup
+Run the build script to set up SSL certificates, create the tunnel, and configure everything:
+```bash
+./Scripts/cloudflared-build.sh
+```
+This script will:
+- Install required packages (certbot and plugins)
+- Set up Let's Encrypt certificates using DNS validation
+- Download and configure cloudflared
+- Create a new tunnel and add its ID to your .env file
+- Configure DNS routing
+- Generate all necessary config files in ./build/
+
+### 3. Starting the Service
+```bash
+# Start the tunnel using the generated configuration
+./_START_TUNNEL.sh
+```
+
+### 4. Verification
+- Check that the tunnel is running: `./build/cloudflared/cloudflared tunnel list`
+- Verify DNS is configured: `./build/cloudflared/cloudflared tunnel route dns list`
+- Test the endpoint: `curl -I https://line.provider.ayaka.lexa.digital/providers/line`
+
 ## Contributing
 
 1. **Proposals & Ideas**: Update `PROJECT.md` with major changes or new approaches.  
