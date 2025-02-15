@@ -1,1 +1,46 @@
+# Stop existing tunnel
+./build/cloudflared/cloudflared tunnel cleanup $CLOUDFLARE_TUNNEL_ID
+
+./build/cloudflared/cloudflared tunnel --loglevel trace --transport-loglevel trace --config ./build/cloudflared/config.yml run 2>&1 | tee ./logs/cloudflared.log
+
+# Run with verbose logging
+./build/cloudflared/cloudflared tunnel --loglevel trace --transport-loglevel trace --config ./build/cloudflared/config.yml run 2>&1 | tee ./logs/cloudflared.log
+
+# Check if cloudflared can read the files
+sudo -u $USER ./build/cloudflared/cloudflared tunnel --config ./build/cloudflared/config.yml validate
+
+# Get zone ID from your .env file
+ZONE_ID=$(grep CLOUDFLARE_ZONE_ID .env | cut -d '=' -f2)
+
+# Check SSL settings
+curl -X GET "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/settings/ssl" \
+     -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+     -H "Content-Type: application/json"
+	 
+# Try different TLS versions
+openssl s_client -connect line.provider.ayaka.lexa.digital:443 -servername line.provider.ayaka.lexa.digital -tls1_2
+openssl s_client -connect line.provider.ayaka.lexa.digital:443 -servername line.provider.ayaka.lexa.digital -tls1_3
+
+# Try with debug output
+openssl s_client -connect line.provider.ayaka.lexa.digital:443 -servername line.provider.ayaka.lexa.digital -debug -msg
+
+
+
+
+
+# Test with verbose output
+curl -v https://line.provider.ayaka.lexa.digital/test
+
+# Test certificate presentation
+openssl s_client -connect line.provider.ayaka.lexa.digital:443 -servername line.provider.ayaka.lexa.digital
+
+
+
+
+
+
+# Start tunnel with explicit cert paths
+./build/cloudflared/cloudflared tunnel --config ./build/cloudflared/config.yml run
+
+
 

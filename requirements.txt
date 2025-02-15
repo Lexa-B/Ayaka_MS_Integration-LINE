@@ -3,3 +3,5 @@ uvicorn>=0.27.0
 python-dotenv>=1.0.0
 slowapi>=0.1.9
 line-bot-sdk>=3.7.0
+cloudflare>=2.3.1
+git+https://github.com/Lexa-B/DramaticLogger.git@v0.0.2-pre4

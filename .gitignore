@@ -10,6 +10,7 @@ __pycache__/
 
 # Logs
 *.log
+DLogging/
 DLog*.zip
 DLog.*zip
 DLog.*.log.zip

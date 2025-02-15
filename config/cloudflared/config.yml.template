@@ -14,9 +14,9 @@ originRequest:
 
 # Basic config
 ingress:
-  # Only accept POST requests to /providers/line
+  # Only accept POST requests to /
   - hostname: line.provider.ayaka.lexa.digital
-    path: /providers/line
+    path: /
     service: http://localhost:50005
     originRequest:
       connectTimeout: 10s
