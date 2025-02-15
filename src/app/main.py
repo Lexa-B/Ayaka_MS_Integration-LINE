@@ -18,6 +18,7 @@ import json
 import ssl
 import socket
 from dramatic_logger import DramaticLogger
+from .LangserveRouter import route_line_message
 
 # Load environment variables
 load_dotenv()
@@ -101,19 +102,15 @@ async def webhook(request: Request):
         body_json = json.loads(body_str)
         events = body_json.get("events", [])
         
+        responses = []
         for event in events:
             if event["type"] == "message":
                 message_event = MessageEvent.from_dict(event)
-                if isinstance(message_event.message, TextMessageContent):
-                    # Echo back the received message
-                    line_bot_api.reply_message(
-                        ReplyMessageRequest(
-                            reply_token=message_event.reply_token,
-                            messages=[TextMessage(text=message_event.message.text)]
-                        )
-                    )
+                # Pass line_bot_api to route_line_message
+                response = await route_line_message(message_event, line_bot_api)
+                responses.append(response)
         
-        return {"status": "OK"}
+        return {"status": "OK", "responses": responses}
         
     except InvalidSignatureError:
         raise HTTPException(status_code=401, detail="Invalid signature")

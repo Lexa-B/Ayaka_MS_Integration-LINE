@@ -4,4 +4,7 @@ python-dotenv>=1.0.0
 slowapi>=0.1.9
 line-bot-sdk>=3.7.0
 cloudflare>=2.3.1
+langchain==0.3.*
+langserve==0.3.1
+rich==13.9.*
 git+https://github.com/Lexa-B/DramaticLogger.git@v0.0.2-pre4
