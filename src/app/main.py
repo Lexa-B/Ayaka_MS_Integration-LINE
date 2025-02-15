@@ -83,38 +83,40 @@ async def webhook(request: Request):
     # Log request details
     DramaticLogger["Normal"]["info"](f"Received webhook request from {request.client.host}")
     
-    # Log all headers
-    logger.info("Received headers:")
-    for header, value in request.headers.items():
-        logger.info(f"{header}: {value}")
-    
     # Get LINE signature
     signature = request.headers.get("X-Line-Signature")
     if not signature:
         logger.error("No X-Line-Signature header found")
         raise HTTPException(status_code=401, detail="No signature")
     
-    # Get and log request body
+    # Get request body
     body = await request.body()
     body_str = body.decode('utf-8')
     
     try:
-        # Parse and pretty print JSON body
+        # Verify signature
+        handler.handle(body_str, signature)
+        
+        # Parse webhook body
         body_json = json.loads(body_str)
-        logger.info("Received body:")
-        logger.info(json.dumps(body_json, indent=2))
+        events = body_json.get("events", [])
         
-        # Mirror back the received data
-        return {
-            "status": "OK",
-            "headers": dict(request.headers),
-            "body": body_json
-        }
+        for event in events:
+            if event["type"] == "message":
+                message_event = MessageEvent.from_dict(event)
+                if isinstance(message_event.message, TextMessageContent):
+                    # Echo back the received message
+                    line_bot_api.reply_message(
+                        ReplyMessageRequest(
+                            reply_token=message_event.reply_token,
+                            messages=[TextMessage(text=message_event.message.text)]
+                        )
+                    )
         
-    except json.JSONDecodeError as e:
-        logger.error(f"Invalid JSON body: {e}")
-        logger.error(f"Raw body: {body_str}")
-        raise HTTPException(status_code=400, detail="Invalid JSON")
+        return {"status": "OK"}
+        
+    except InvalidSignatureError:
+        raise HTTPException(status_code=401, detail="Invalid signature")
     except Exception as e:
         logger.error(f"Error processing webhook: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -139,5 +141,5 @@ async def handle_text_message(event):
         raise
 
 if __name__ == "__main__":
-    port = int(os.getenv("APP_PORT", 443))
+    port = int(os.getenv("APP_PORT", 50005))
     uvicorn.run(app, host="0.0.0.0", port=port) 
