@@ -18,7 +18,8 @@ import json
 import ssl
 import socket
 from dramatic_logger import DramaticLogger
-from .LangserveRouter import route_line_message
+from .LangserveRouter import route_line_message, send_line_message
+from .models import ProviderMessage  # Changed from .ProviderMessage to .models
 
 # Load environment variables
 load_dotenv()
@@ -81,20 +82,17 @@ app.add_middleware(LoggingMiddleware)
 
 @app.post("/")
 async def webhook(request: Request):
-    # Log request details
-    DramaticLogger["Normal"]["info"](f"Received webhook request from {request.client.host}")
-    
-    # Get LINE signature
-    signature = request.headers.get("X-Line-Signature")
-    if not signature:
-        logger.error("No X-Line-Signature header found")
-        raise HTTPException(status_code=401, detail="No signature")
-    
-    # Get request body
-    body = await request.body()
-    body_str = body.decode('utf-8')
-    
+    """Handle incoming LINE messages"""
     try:
+        # Get LINE signature and verify
+        signature = request.headers.get("X-Line-Signature")
+        if not signature:
+            raise HTTPException(status_code=401, detail="No signature")
+        
+        # Get request body
+        body = await request.body()
+        body_str = body.decode('utf-8')
+        
         # Verify signature
         handler.handle(body_str, signature)
         
@@ -106,7 +104,7 @@ async def webhook(request: Request):
         for event in events:
             if event["type"] == "message":
                 message_event = MessageEvent.from_dict(event)
-                # Pass line_bot_api to route_line_message
+                # Just route to orchestrator and return success
                 response = await route_line_message(message_event, line_bot_api)
                 responses.append(response)
         
@@ -116,6 +114,17 @@ async def webhook(request: Request):
         raise HTTPException(status_code=401, detail="Invalid signature")
     except Exception as e:
         logger.error(f"Error processing webhook: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/send")
+async def send_message(message: ProviderMessage):
+    """Handle outgoing messages from orchestrator to LINE"""
+    try:
+        DramaticLogger["Normal"]["info"](f"Received message from orchestrator: {message.model_dump()}")
+        return await send_line_message(message)
+    except Exception as e:
+        DramaticLogger["Dramatic"]["error"](f"Error sending message: {str(e)}")
+        DramaticLogger["Normal"]["error"](f"Error details: {e.__dict__}")
         raise HTTPException(status_code=500, detail=str(e))
 
 async def handle_text_message(event):
